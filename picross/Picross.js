@@ -2,6 +2,7 @@ class Picross {
     constructor(width, height, difficulty, mode, imageSeed) {
         this.width = width;
         this.height = height;
+        this.loading = 0; //holds how loaded everything is
 
         this.tiles = []; //tiles in game
         this.rows = []; //rows counter
@@ -14,6 +15,7 @@ class Picross {
          */
         this.gameMode = mode;
         this.imageSeed = imageSeed;
+        console.log(this.imageSeed)
         //difficulty
         /**
          * 9 - very easy
@@ -33,21 +35,52 @@ class Picross {
         this.uncrossing = false; //sets to uncross out
     }
 
-    createTiles(mode) {
+    createRandomTiles() {
         for (let y = 0; y < this.height; y++) {
             this.tiles.push([]);
             for (let x = 0; x < this.width; x++) {
                 this.tiles[y].push(new Tile(x, y));
                 //for randomizing tiles
-                //TODO: edit randomization
-                if (mode === 0 && (random(10) < this.difficulty)) {
+                if ((random(10) < this.difficulty)) {
                     this.tiles[y][x].needsToBePicked = true;
-                } else {
-                    this.tiles[y][x].needsToBePicked = false;
                 }
             }
         }
         this.loading++; //ends loading
+    }
+
+    createCustomTiles() {
+        let avg = 0; //will hold the average for how dark the entire image is
+        //first loop iterates over the image and converts it to grayscale
+        for (let x = 0; x < this.imageSeed.width; x++) {
+            for (let y = 0; y < this.imageSeed.height; y++) {
+                //get color data, get an average, add it to the global averages
+                let px = this.imageSeed.get(x, y);
+                let r = red(px);
+                let g = green(px);
+                let b = blue(px);
+                let average = (r + g + b) / 3;
+                this.imageSeed.set(x, y, color(average, average, average));
+                //add the average to the avg var
+                avg += average;
+            }
+        }
+        this.imageSeed.updatePixels();
+        avg /= (this.imageSeed.width * this.imageSeed.height);
+        //second for loop will create all the tiles
+        for (let y = 0; y < this.imageSeed.height; y++) {
+            this.tiles.push([]);
+            for (let x = 0; x < this.imageSeed.width; x++) {
+                //color data was already averaged, so just get any value
+                let px = this.imageSeed.get(x, y);
+                let r = red(px);
+                this.tiles[y].push(new Tile(x, y));
+                if (r < avg) {
+                    this.tiles[y][x].needsToBePicked = true;
+                }
+            }
+        }
+        this.loading++;
     }
 
     createRows(tiles, arr) {
@@ -97,17 +130,19 @@ class Picross {
     }
 
     display() {
-        textAlign(CENTER, CENTER);
-        textSize(blockSize);
-        this.tiles.forEach(tileSet => {
-            tileSet.forEach(tile => tile.display())
-        });
-        textAlign(CENTER, CENTER);
-        textSize(blockSize * (2/3));
-        this.tileCounters.forEach(axis => {
-            axis.forEach(counter => {
-                counter.display();
+        if (this.loading >= 3) {
+            textAlign(CENTER, CENTER);
+            textSize(blockSize);
+            this.tiles.forEach(tileSet => {
+                tileSet.forEach(tile => tile.display())
+            });
+            textAlign(CENTER, CENTER);
+            textSize(blockSize * (2 / 3));
+            this.tileCounters.forEach(axis => {
+                axis.forEach(counter => {
+                    counter.display();
+                })
             })
-        })
+        }
     }
 }

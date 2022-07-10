@@ -19,8 +19,10 @@ class InitGame {
          * 0 - Randomized = random game generation
          * 1 - Custom - Created from an image
          */
-        this.gameMode = 0;
-        this.imageSeed; //for if the custom gameMode is picked
+        this.gameMode = 1;
+        this.defaultImage = true;
+        let image = loadImage("./media/default.jpg");
+        this.imageSeed = image; //for if the custom gameMode is picked
 
         /***** MENU MODES *****/
         /**modes:
@@ -98,7 +100,13 @@ class InitGame {
         );
         let difficulty;
         this.difficulties.forEach(level => { if (level[1]) { difficulty = level[0] } });
-        text("Mode: " + this.gameMode, width / 2, height * 0.29);
+        let gamePlay;
+        if (this.gameMode === 0) {
+            gamePlay = "Randomized";
+        } else {
+            gamePlay = "Image Based"
+        }
+        text("Mode: " + gamePlay, width / 2, height * 0.29);
         text("Difficulty: " + difficulty, width / 2, height * 0.32);
 
         //Start game button
@@ -211,15 +219,29 @@ class InitGame {
             fill(0);
             canvas.drop(file => {
                 if (file.type === "image") {
-                    console.log(file);
                     this.imageSeed = loadImage(file.data);
+                    this.defaultImage = false;
                 } else {
                     this.imageSeed = "Unsupported File Format, Sorry :("
                 }
             });
+            //scale image
+            //width
+            if (this.imageSeed.width >= 1000) {
+                this.imageSeed.resize(this.imageSeed.width *= .01, this.imageSeed.height);
+            } else if (this.imageSeed.width >= 100) {
+                this.imageSeed.resize(this.imageSeed.width *= .1, this.imageSeed.height);
+            }
+            //height
+            if (this.imageSeed.height >= 1000) {
+                this.imageSeed.resize(this.imageSeed.width, this.imageSeed.height *= .01);
+            } else if (this.imageSeed.height >= 100) {
+                this.imageSeed.resize(this.imageSeed.width, this.imageSeed.height *= .1);
+            }
+            console.log(this.imageSeed.width, this.imageSeed.height)
             //TODO: after beta remove image appearance
             /***** TO REMOVE THE IMAGE APPEARANCE DONT USE CREATEIMG JUST PASS THE FILE DATA TO THIS.IMAGESEED *****/
-            if (typeof this.imageSeed === "object") {
+            if (typeof this.imageSeed === "object" && !this.defaultImage) {
                 imageMode(CENTER)
                 image(this.imageSeed, x + (wid * .5), y + (hei * .5));
             } else if (typeof this.imageSeed === "string") {
@@ -767,11 +789,6 @@ class InitGame {
      * when clicked, launches the picross game
      */
     startGame() {
-        if (this.gameMode === 1) {
-            if (typeof this.imageSeed != "object") {
-                this.imageSeed = loadImage("media/default.jpg");
-            }
-        } 
         createPicross(this.picWid, this.picHei, this.blockWid, this.difficultyLevel, this.gameMode, this.imageSeed);
     }
 

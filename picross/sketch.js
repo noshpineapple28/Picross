@@ -19,10 +19,7 @@ function setup() {
    picross = new InitGame();
    canvas = createCanvas(picross.width, picross.height);
    //sets canvas position
-   canvas.position((window.innerWidth - width) / 2, (window.innerHeight - height) / 2)
-   //sets global width
-
-
+   canvas.position((window.innerWidth - width) / 2, (window.innerHeight - height) / 2);
 
    //stops the right click menu
    window.addEventListener("contextmenu", e => e.preventDefault());
@@ -32,7 +29,13 @@ function setup() {
  * draw :
  */
 function draw() {
-   picross.display();
+   if (picross instanceof Picross) {
+      if (picross.loading >= 3) {
+         picross.display();
+      }
+   } else {
+      picross.display();
+   }
 }
 
 /**
@@ -44,14 +47,23 @@ function draw() {
 function createPicross(wid, hei, blockW, difficulty, mode, imageSeed = 0) {
    background(0, 0)
    blockSize = blockW;
-   picross = new Picross(wid, hei, difficulty, mode, imageSeed);
+   if (mode === 1) {
+      picross = new Picross(imageSeed.width, imageSeed.height, difficulty, mode, imageSeed);
+   } else {
+      picross = new Picross(wid, hei, difficulty, mode, imageSeed);
+   }
+   /**** FINISH PICROSS SETUP ****/
    //set up the new canvas dimensions
    let cnvWid = (picross.width + floor(picross.width / 2)) * blockSize;
    let cnvHei = (picross.height + floor((picross.height / 2))) * blockSize;
    resizeCanvas(cnvWid, cnvHei)
    canvas.position((window.innerWidth - width) / 2, (window.innerHeight - height) / 2)
-   /**** FINISH PICROSS SETUP ****/
-   picross.createTiles(picross.gameMode);
+   //creates the rows and columns
+   if (picross.gameMode === 0) {
+      picross.createRandomTiles();
+   } else if (typeof picross.imageSeed === "object") {
+      picross.createCustomTiles();
+   }
    picross.createRows(picross.tiles, picross.rows);
    picross.createColumns(picross.tiles, picross.col);
 }
