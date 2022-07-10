@@ -1,5 +1,5 @@
 class Picross {
-    constructor(width, height) {
+    constructor(width, height, difficulty, mode, imageSeed) {
         this.width = width;
         this.height = height;
 
@@ -12,7 +12,18 @@ class Picross {
          * 0 - randomized
          * 1 - image based
          */
-        this.gameMode = 0;
+        this.gameMode = mode;
+        this.imageSeed = imageSeed;
+        //difficulty
+        /**
+         * 9 - very easy
+         * 8 - easy
+         * 7 - normal
+         * 5 - hard
+         * 4 - very hard
+         * 2 - extreme
+         */
+        this.difficulty = difficulty;
 
         /***** MOUSE *****/
         this.selecting = false;
@@ -28,7 +39,8 @@ class Picross {
             for (let x = 0; x < this.width; x++) {
                 this.tiles[y].push(new Tile(x, y));
                 //for randomizing tiles
-                if (mode === 0 && (random(10) > 3)) {
+                //TODO: edit randomization
+                if (mode === 0 && (random(10) < this.difficulty)) {
                     this.tiles[y][x].needsToBePicked = true;
                 } else {
                     this.tiles[y][x].needsToBePicked = false;

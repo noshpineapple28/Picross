@@ -41,10 +41,10 @@ function draw() {
  * when finished menu selecting, initialize the game
  * TODO: impliment gameMode select
  */
-function createPicross(wid, hei, blockW, mode) {
+function createPicross(wid, hei, blockW, difficulty, mode, imageSeed = 0) {
    background(0, 0)
    blockSize = blockW;
-   picross = new Picross(wid, hei);
+   picross = new Picross(wid, hei, difficulty, mode, imageSeed);
    //set up the new canvas dimensions
    let cnvWid = (picross.width + floor(picross.width / 2)) * blockSize;
    let cnvHei = (picross.height + floor((picross.height / 2))) * blockSize;
