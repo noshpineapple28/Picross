@@ -23,6 +23,7 @@ class InitGame {
         this.defaultImage = true;
         let image = loadImage("./media/default.jpg");
         this.imageSeed = image; //for if the custom gameMode is picked
+        this.imageResized = true;
 
         /***** MENU MODES *****/
         /**modes:
@@ -219,26 +220,13 @@ class InitGame {
             fill(0);
             canvas.drop(file => {
                 if (file.type === "image") {
-                    this.imageSeed = loadImage(file.data);
+                    this.imageSeed = loadImage(file.data, this.resizeImage);
                     this.defaultImage = false;
+                    this.imageResized = false;
                 } else {
                     this.imageSeed = "Unsupported File Format, Sorry :("
                 }
             });
-            //scale image
-            //width
-            if (this.imageSeed.width >= 1000) {
-                this.imageSeed.resize(this.imageSeed.width *= .01, this.imageSeed.height);
-            } else if (this.imageSeed.width >= 100) {
-                this.imageSeed.resize(this.imageSeed.width *= .1, this.imageSeed.height);
-            }
-            //height
-            if (this.imageSeed.height >= 1000) {
-                this.imageSeed.resize(this.imageSeed.width, this.imageSeed.height *= .01);
-            } else if (this.imageSeed.height >= 100) {
-                this.imageSeed.resize(this.imageSeed.width, this.imageSeed.height *= .1);
-            }
-            console.log(this.imageSeed.width, this.imageSeed.height)
             //TODO: after beta remove image appearance
             /***** TO REMOVE THE IMAGE APPEARANCE DONT USE CREATEIMG JUST PASS THE FILE DATA TO THIS.IMAGESEED *****/
             if (typeof this.imageSeed === "object" && !this.defaultImage) {
@@ -248,6 +236,65 @@ class InitGame {
                 text(this.imageSeed, x + (wid * .5), y + (hei * .5));
             } else {
                 text("Drop an Image file here!\n\nIf No image is given, a \ndefault image willbe used", x + (wid * .5), y + (hei * .5));
+            }
+        }
+    }
+
+    resizeImage(image) {
+        //finds gcd to find aspect ratio
+        let aspectRatio = (x, y) => {
+            let ratio = []; //will hold the ratio
+            //boils down the numbers until the remainder is 0 and we have a GCD
+            //dependent on which value is higher, we build the ratio off of that
+            if (x > y) {
+                var tempX = x;
+                var tempY = y;
+            } else {
+                var tempX = y;
+                var tempY = x;
+            }
+            while (tempY) {
+                let tempT = tempY;
+                tempY = tempX % tempY;
+                tempX = tempT;
+            }
+            ratio.push(x / tempX, y / tempX);
+            return ratio;
+        }
+        //assign and adjust image values
+        let widthT = image.width;
+        let heightT = image.height;
+        if (widthT % 2 != 0) {
+            widthT++;
+        }
+        if (heightT % 2 != 0) {
+            heightT++;
+        }
+        let imageRatio = aspectRatio(widthT, heightT)
+        //scale image
+        //if 1:1
+        if (imageRatio[0] === imageRatio[1]) {
+            image.resize(30, 30);
+            //else if 16:9
+        } else if ((imageRatio[0] === 16 && imageRatio[1] === 9) || (imageRatio[1] === 16 && imageRatio[0] === 9)) {
+            image.resize(32, 18);
+            //else if 4:3
+        } else if ((imageRatio[0] === 4 && imageRatio[1] === 3) || (imageRatio[1] === 4 && imageRatio[0] === 3)) {
+            image.resize(32, 24);
+        } else {
+            image.resize(imageRatio[0] * 3, imageRatio[1] * 3);
+            if (imageRatio[0] <= 5 && imageRatio[1] <= 5) {
+                image.resize(imageRatio[0] * 7, imageRatio[1] * 7);
+            } else if (imageRatio[0] <= 10 && imageRatio[1] <= 5) {
+                image.resize(imageRatio[0] * 3, imageRatio[1] * 3);
+            } else if (imageRatio[0] <= 20 && imageRatio[1] <= 5) {
+                image.resize(imageRatio[0] * 2, imageRatio[1] * 2);
+            } else if (imageRatio[0] >= 35 && imageRatio[1] >= 35) {
+                let tempX = imageRatio[0]/imageRatio[1];
+                let tempY = imageRatio[1]/imageRatio[0];
+                tempX *= 2;
+                tempY *= 2;
+                image.resize(round(tempX) * 30, round(tempY) * 20);
             }
         }
     }

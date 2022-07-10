@@ -15,7 +15,6 @@ class Picross {
          */
         this.gameMode = mode;
         this.imageSeed = imageSeed;
-        console.log(this.imageSeed)
         //difficulty
         /**
          * 9 - very easy
